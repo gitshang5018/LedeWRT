@@ -32,30 +32,35 @@ fi
 
 # ====== MT7621 闭源 WiFi 开机自启动 ======
 # 原理说明:
-#   Lean LEDE 的 luci-app-mtwifi 包自带 /sbin/mtkwifi (Lua 脚本)，它是闭源驱动的官方
-#   WiFi 管理入口。mtkwifi up 会遍历 /sys/class/net 找到所有 ra*/rai* 接口，执行
-#   ifconfig up 并 brctl addif br-lan 将它们桥接到 LAN。
+#   闭源驱动存在启动时序竞争问题：内核模块加载完成后，ra*/rai* 接口可能还未就绪，
+#   导致 WiFi 无法跟随 network 服务自动启动。
 #
-#   但闭源驱动存在已知的启动时序竞争问题：内核模块加载完成后，接口可能还未就绪，
-#   导致 WiFi 无法跟随 network 服务自动启动。社区通行方案是在 rc.local 或独立 init.d
-#   脚本中延迟调用 /sbin/mtkwifi reload。
+# 历史方案（已废弃）:
+#   将 init.d 脚本文件放在 default-settings/files/etc/init.d/ 目录下，但 Lean 的
+#   default-settings 包的 Makefile 只安装 zzz-default-settings 到 /etc/uci-defaults/，
+#   不会递归安装 files/etc/init.d/ 子目录，导致脚本根本没被打包进固件。
 #
-#   这里使用 init.d 脚本方案（START=99 保证最后执行），延迟后直接调用 mtkwifi reload
-#   完成驱动加载、接口 UP、桥接三合一操作，比手动 modprobe + ip link + uci 更可靠。
+# 当前方案（双保险）:
+#   1. 利用 base-files 包的 /etc/uci-defaults/ 机制：在该目录放置脚本，系统首次启动时
+#      自动执行，执行成功后自动删除。base-files 包一定会安装该目录下的所有文件。
+#      脚本在首次启动时动态创建 /etc/init.d/mtwifi-init 并 enable。
+#   2. 同时修改 /etc/rc.local 写入兜底的延迟 mtkwifi reload。
 
 if [ "$DEVICE_MODEL" = "歌华链 MT7621" ]; then
-  INIT_F=./package/lean/default-settings/files/etc/init.d/mtwifi-init
-  mkdir -p "$(dirname "$INIT_F")"
-  cat > "$INIT_F" <<'INITSCRIPT'
+  # --- 方案 1: uci-defaults 首次启动脚本（在首次启动时动态创建 init.d 服务） ---
+  UCI_DEFAULTS_DIR=./package/base-files/files/etc/uci-defaults
+  mkdir -p "$UCI_DEFAULTS_DIR"
+  cat > "$UCI_DEFAULTS_DIR/99-mtwifi-init" <<'UCIDEFAULT'
+#!/bin/sh
+# 动态创建 init.d 服务脚本
+cat > /etc/init.d/mtwifi-init <<'INITEOF'
 #!/bin/sh /etc/rc.common
 START=99
 
 start() {
     # 后台延迟执行，避免阻塞系统启动流程
     (
-        # 等待内核模块和网络子系统完全初始化
         sleep 15
-        # 使用 mtkwifi 官方接口重载驱动（加载模块 + 接口 UP + 桥接 br-lan）
         /sbin/mtkwifi reload
         logger -t mtwifi-init "闭源 WiFi 驱动重载完成"
     ) &
@@ -64,10 +69,16 @@ start() {
 stop() {
     /sbin/mtkwifi down 2>/dev/null
 }
-INITSCRIPT
-  chmod +x "$INIT_F"
-  # 在 zzz-default-settings 中注册自启
-  if [ -f ./package/lean/default-settings/files/zzz-default-settings ]; then
-    sed -i '/exit 0/i /etc/init.d/mtwifi-init enable' ./package/lean/default-settings/files/zzz-default-settings
-  fi
+INITEOF
+chmod +x /etc/init.d/mtwifi-init
+/etc/init.d/mtwifi-init enable
+
+# 兜底：在 rc.local 的 exit 0 前插入延迟重载命令
+if [ -f /etc/rc.local ] && ! grep -q 'mtkwifi reload' /etc/rc.local; then
+    sed -i '/^exit 0/i (sleep 20 && /sbin/mtkwifi reload && logger -t rc.local "WiFi 兜底重载完成") &' /etc/rc.local
+fi
+
+exit 0
+UCIDEFAULT
+  chmod +x "$UCI_DEFAULTS_DIR/99-mtwifi-init"
 fi
