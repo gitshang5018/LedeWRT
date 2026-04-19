@@ -145,6 +145,10 @@ jobs:
         run: |
           chmod +x local_repo/scripts/patch_mt76.sh
           ./local_repo/scripts/patch_mt76.sh
+      - name: 修补 luci-app-mtwifi 高级设置 502 崩溃
+        run: |
+          chmod +x local_repo/scripts/patch_mtwifi_luci.sh
+          ./local_repo/scripts/patch_mtwifi_luci.sh
       - name: 编译固件
         run: |
           make -j$(nproc) || make -j4 V=s
