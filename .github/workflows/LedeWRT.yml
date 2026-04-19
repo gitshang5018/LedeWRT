@@ -84,7 +84,7 @@ jobs:
       - name: 生成安全的缓存前缀
         id: set-prefix  # 核心修改 1：给这一步赋予一个唯一的 ID
         run: |
-          SAFE_MODEL=$(echo "${{ env.DEVICE_MODEL }}" | sed 's/[^a-zA-Z0-9]/-/g')
+          SAFE_MODEL=$(echo "${{ env.DEVICE_MODEL }}" | sed 's/[^a-zA-Z0-9]/-/g; s/-\+/-/g; s/^-//; s/-$//')
           echo "prefix=$SAFE_MODEL" >> $GITHUB_OUTPUT  # 核心修改 2：写入到官方的 output 通道中
       - name: 配置原生编译缓存 (CCache & Toolchain)
         uses: actions/cache@v4
@@ -171,7 +171,7 @@ jobs:
       - name: 生成 Release 标签
         id: tag
         run: |
-          SAFE_MODEL=$(echo "${{ env.DEVICE_MODEL }}" | sed 's/[^a-zA-Z0-9]/-/g')
+          SAFE_MODEL=$(echo "${{ env.DEVICE_MODEL }}" | sed 's/[^a-zA-Z0-9]/-/g; s/-\+/-/g; s/^-//; s/-$//')
           BUILD_DATE=$(date +"%Y%m%d-%H%M")
           echo "release_tag=${SAFE_MODEL}_${BUILD_DATE}" >> $GITHUB_OUTPUT
           echo "build_date=$(date +"%Y-%m-%d %H:%M")" >> $GITHUB_OUTPUT
