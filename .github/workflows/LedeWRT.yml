@@ -13,12 +13,13 @@ on:
         required: true
         type: choice
         options:
+          - 所有设备
           - CW-N5105
           - Wyse 3040
           - 歌华链 MT7621
           - P&W R619AC
           - 京东云雅典娜 AX6600
-        default: 'CW-N5105'
+        default: '所有设备'
       RELEASE:
         description: '发布 Release'
         required: false
@@ -28,13 +29,31 @@ on:
 permissions:
   contents: write
 
-env:
-  DEVICE_MODEL: ${{ inputs.DEVICE_MODEL }}
-
 jobs:
+  setup_matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: 设置编译矩阵
+        id: set-matrix
+        run: |
+          if [ "${{ inputs.DEVICE_MODEL }}" == "所有设备" ]; then
+            echo 'matrix=["CW-N5105", "Wyse 3040", "歌华链 MT7621", "P&W R619AC", "京东云雅典娜 AX6600"]' >> $GITHUB_OUTPUT
+          else
+            echo "matrix=[\"${{ inputs.DEVICE_MODEL }}\"]" >> $GITHUB_OUTPUT
+          fi
+
   build_openwrt:
-    name: 编译 ${{ inputs.DEVICE_MODEL }} 固件
+    needs: setup_matrix
+    name: 编译 ${{ matrix.device }} 固件
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        device: ${{ fromJSON(needs.setup_matrix.outputs.matrix) }}
+    env:
+      DEVICE_MODEL: ${{ matrix.device }}
     
     steps:
       - name: 清理磁盘空间并初始化编译环境
@@ -183,19 +202,19 @@ jobs:
       - name: 上传编译信息
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.DEVICE_MODEL }}_编译信息_buildinfo
+          name: ${{ env.DEVICE_MODEL }}_编译信息_buildinfo
           path: ./artifact/buildinfo/
 
       - name: 上传所有软件包
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.DEVICE_MODEL }}_离线插件包_package
+          name: ${{ env.DEVICE_MODEL }}_离线插件包_package
           path: ./artifact/package/
 
       - name: 上传最终固件
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.DEVICE_MODEL }}_固件
+          name: ${{ env.DEVICE_MODEL }}_固件
           path: ./bin/targets/
 
       - name: 发布 Release
