@@ -25,6 +25,18 @@ on:
         required: false
         type: boolean
         default: true
+  workflow_call:
+    inputs:
+      DEVICE_MODEL:
+        description: '设备选择'
+        required: false
+        type: string
+        default: '所有设备'
+      RELEASE:
+        description: '发布 Release'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -38,10 +50,11 @@ jobs:
       - name: 设置编译矩阵
         id: set-matrix
         run: |
-          if [ "${{ inputs.DEVICE_MODEL }}" == "所有设备" ]; then
+          DEVICE="${{ inputs.DEVICE_MODEL }}"
+          if [ -z "$DEVICE" ] || [ "$DEVICE" == "所有设备" ]; then
             echo 'matrix=["CW-N5105", "Wyse 3040", "歌华链 MT7621", "P&W R619AC", "京东云雅典娜 AX6600"]' >> $GITHUB_OUTPUT
           else
-            echo "matrix=[\"${{ inputs.DEVICE_MODEL }}\"]" >> $GITHUB_OUTPUT
+            echo "matrix=[\"$DEVICE\"]" >> $GITHUB_OUTPUT
           fi
 
   build_openwrt:
@@ -218,7 +231,7 @@ jobs:
           path: ./bin/targets/
 
       - name: 发布 Release
-        if: inputs.RELEASE
+        if: inputs.RELEASE == true
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.release_tag }}
@@ -226,10 +239,12 @@ jobs:
           body: |
             ## 📦 固件信息
             - **设备型号**: ${{ env.DEVICE_MODEL }}
+            - **版本号**: ${{ steps.tag.outputs.release_tag }}
             - **构建时间**: ${{ steps.tag.outputs.build_date }} (Asia/Shanghai)
             - **源码仓库**: coolsnowwolf/lede
 
             > 默认管理地址: `10.10.10.1`
+            > 默认管理密码: `password`
           files: ./artifact/firmware/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,47 @@
+name: 检测上游更新并编译
+
+on:
+  schedule:
+    - cron: 0 18 * * *  # 每天 18:00 UTC (北京时间凌晨 2 点) 自动检查并编译
+  workflow_dispatch:
+
+jobs:
+  check_update:
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+    steps:
+      - name: 获取上游最新 Commit Hash
+        id: getHash
+        run: |
+          git ls-remote https://github.com/coolsnowwolf/lede HEAD | awk '{print $1}' > commitHash
+          echo "commitHash=$(cat commitHash)" >> $GITHUB_OUTPUT
+
+      - name: 对比 Commit Hash 缓存
+        id: cacheHash
+        uses: actions/cache@v4
+        with:
+          path: commitHash
+          key: upstream-lede-${{ steps.getHash.outputs.commitHash }}
+
+      - name: 决定是否编译
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "手动触发，执行编译"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          elif [ "${{ steps.cacheHash.outputs.cache-hit }}" != "true" ]; then
+            echo "上游有更新，执行编译"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "上游无更新，跳过编译"
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          fi
+
+  call_build:
+    needs: check_update
+    if: needs.check_update.outputs.should_build == 'true'
+    uses: ./.github/workflows/LedeWRT.yml
+    with:
+      DEVICE_MODEL: '所有设备'
+      RELEASE: true
