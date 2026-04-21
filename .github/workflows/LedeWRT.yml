@@ -208,10 +208,12 @@ jobs:
         id: tag
         run: |
           SAFE_MODEL=$(echo "${{ env.DEVICE_MODEL }}" | sed 's/[^a-zA-Z0-9]/-/g; s/-\+/-/g; s/^-//; s/-$//')
-          BUILD_DATE=$(date +"%Y%m%d-%H%M")
-          echo "release_tag=${SAFE_MODEL}_${BUILD_DATE}" >> $GITHUB_OUTPUT
+          BUILD_DATE=$(date +"%Y%m%d")
+          LEDE_HASH=$(git rev-parse --short HEAD)
+          echo "release_tag=${SAFE_MODEL}_${BUILD_DATE}_${LEDE_HASH}" >> $GITHUB_OUTPUT
           echo "build_date=$(date +"%Y-%m-%d %H:%M")" >> $GITHUB_OUTPUT
-          
+          echo "lede_hash=${LEDE_HASH}" >> $GITHUB_OUTPUT
+
       - name: 上传编译信息
         uses: actions/upload-artifact@v4
         with:
@@ -239,9 +241,9 @@ jobs:
           body: |
             ## 📦 固件信息
             - **设备型号**: ${{ env.DEVICE_MODEL }}
-            - **版本号**: ${{ steps.tag.outputs.release_tag }}
+            - **固件版本号**: ${{ steps.tag.outputs.release_tag }}
+            - **源码 Commit**: `coolsnowwolf/lede@${{ steps.tag.outputs.lede_hash }}`
             - **构建时间**: ${{ steps.tag.outputs.build_date }} (Asia/Shanghai)
-            - **源码仓库**: coolsnowwolf/lede
 
             > 默认管理地址: `10.10.10.1`
             > 默认管理密码: `password`
