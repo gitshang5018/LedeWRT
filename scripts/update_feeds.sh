@@ -24,5 +24,10 @@ git clone https://github.com/kenzok8/golang -b 1.26 package/golang
 # 6. 安装插件
 ./scripts/feeds install -a
 
-# 7. 自动清理配置缓存，防止旧架构/旧版本的依赖干扰
+# 7. 安装后清理：从 package/feeds 中移除有缺陷依赖或语法错误的包
+#    （feeds install 通过索引文件创建符号链接，仅删 feeds/ 不够，必须也删 package/feeds/）
+rm -rf package/feeds/kenzo/luci-app-dockerman
+rm -rf package/feeds/kenzo/luci-theme-alpha
+
+# 8. 自动清理配置缓存，防止旧架构/旧版本的依赖干扰
 rm -rf tmp
