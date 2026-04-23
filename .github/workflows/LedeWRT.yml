@@ -165,7 +165,16 @@ jobs:
           cat local_repo/configs/base.config >> .config
           
           # ======================== 固件定制部分结束 ========================
-          make defconfig
+          if ! make defconfig; then
+            echo "========== make defconfig 失败，输出诊断信息 =========="
+            if [ -f tmp/.config-package.in ]; then
+              echo "--- 文件总行数 ---"
+              wc -l tmp/.config-package.in
+              echo "--- 错误附近的内容（尾部 200 行） ---"
+              tail -n 200 tmp/.config-package.in
+            fi
+            exit 1
+          fi
           
           # ====== 后置修补与网络配置 ======
           chmod +x local_repo/scripts/post_config.sh
