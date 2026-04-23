@@ -15,6 +15,8 @@ rm -rf feeds/luci/applications/luci-app-mosdns
 rm -rf feeds/packages/net/{alist,adguardhome,mosdns,xray*,v2ray*,sing*,smartdns}
 rm -rf feeds/packages/utils/v2dat
 rm -rf feeds/packages/lang/golang
+rm -rf feeds/kenzo/luci-app-dockerman
+rm -rf feeds/kenzo/luci-theme-alpha
 
 # 5. 将自定义 Golang 放入 package 目录（优先级最高且不破坏 feeds 索引）
 git clone https://github.com/kenzok8/golang -b 1.26 package/golang
