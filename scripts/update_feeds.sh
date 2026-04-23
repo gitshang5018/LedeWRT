@@ -18,8 +18,9 @@ rm -rf feeds/packages/lang/golang
 rm -rf feeds/kenzo/luci-app-dockerman
 rm -rf feeds/kenzo/luci-theme-alpha
 
-# 5. 将自定义 Golang 放入 package 目录（优先级最高且不破坏 feeds 索引）
-git clone https://github.com/kenzok8/golang -b 1.26 package/golang
+# 5. 将自定义 Golang 放入 feeds 目录（满足其他包对该路径下 .mk 文件的硬编码引用）
+mkdir -p feeds/packages/lang
+git clone https://github.com/kenzok8/golang -b 1.26 feeds/packages/lang/golang
 
 # 6. 安装插件
 ./scripts/feeds install -a
