@@ -82,3 +82,10 @@ exit 0
 UCIDEFAULT
   chmod +x "$UCI_DEFAULTS_DIR/99-mtwifi-init"
 fi
+
+# ====== 全局修补：禁用有已知编译 bug 的包变体 ======
+# libwebsockets 4.3.2 的 mbedtls 变体调用了被禁用的 mbedtls_version_get_string()，
+# 导致编译失败。所有实际用到 libwebsockets 的包（如 ttyd）依赖的是 full 或 openssl 变体。
+sed -i '/CONFIG_PACKAGE_libwebsockets-mbedtls/d' .config
+echo '# CONFIG_PACKAGE_libwebsockets-mbedtls is not set' >> .config
+make defconfig
