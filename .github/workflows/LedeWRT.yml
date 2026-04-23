@@ -170,8 +170,8 @@ jobs:
             if [ -f tmp/.config-package.in ]; then
               echo "--- 文件总行数 ---"
               wc -l tmp/.config-package.in
-              echo "--- 错误附近的内容（尾部 200 行） ---"
-              tail -n 200 tmp/.config-package.in
+              echo "--- 报错行号附近内容 (131650-131700) ---"
+              sed -n '131650,131700p' tmp/.config-package.in
             fi
             exit 1
           fi
