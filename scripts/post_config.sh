@@ -27,7 +27,7 @@ fi
 if [ -f ./package/lean/default-settings/files/zzz-default-settings ]; then
   sed -i "2i # network config" ./package/lean/default-settings/files/zzz-default-settings
   sed -i "3i uci set network.lan.ipaddr='10.10.10.1'" ./package/lean/default-settings/files/zzz-default-settings
-  sed -i "4i uci commit network\n" ./package/lean/default-settings/files/zzz-default-settings
+  sed -i '4i uci commit network' ./package/lean/default-settings/files/zzz-default-settings
 fi
 
 # ====== MT7621 闭源 WiFi 开机自启动 ======

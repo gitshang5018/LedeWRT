@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 # 1. 清理环境：删除旧的手动克隆包，防止与新源冲突
 rm -rf package/{mosdns,v2ray-geodata,v2dat,luci-app-unblockneteasemusic,lucky}
 

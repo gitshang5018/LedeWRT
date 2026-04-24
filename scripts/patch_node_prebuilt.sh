@@ -80,13 +80,27 @@ define Package/node
   DEPENDS:=+libc +libstdcpp +libopenssl +zlib +libatomic
 endef
 
-define Package/node/extra_provides
-	libc.musl-x86_64.so.1
-endef
+  define Package/node/extra_provides
+	echo "libc.musl-x86_64.so.1"
+  endef
 
 define Package/node/description
   Node.js® is a JavaScript runtime built on Chrome's V8 JavaScript engine.
   (Using prebuilt binary for x86_64 musl to skip ~6h source compilation)
+endef
+
+# Define the node-npm package to satisfy dependencies
+define Package/node-npm
+  SECTION:=lang
+  CATEGORY:=Languages
+  TITLE:=npm - Node.js package manager (prebuilt)
+  URL:=https://nodejs.org/
+  DEPENDS:=+node
+endef
+
+define Package/node-npm/description
+  npm is the package manager for Node.js.
+  (Using prebuilt binary for x86_64 musl)
 endef
 
 # Host 预编译逻辑：直接从官方下载 x64 二进制供编译机使用
@@ -101,27 +115,60 @@ define Host/Compile
 	@echo "[node-prebuilt] Skipping host compilation, using official binary"
 endef
 
+# Install node AND npm to the host staging directory
 define Host/Install
 	$(INSTALL_DIR) $(STAGING_DIR_HOST)/bin
 	$(INSTALL_BIN) $(HOST_BUILD_DIR)/bin/node $(STAGING_DIR_HOST)/bin/node
 	$(LN) node $(STAGING_DIR_HOST)/bin/nodejs
+	# Install npm and npx for the host, they are needed for other packages' build process
+	cp -a $(HOST_BUILD_DIR)/bin/npm $(STAGING_DIR_HOST)/bin/
+	cp -a $(HOST_BUILD_DIR)/bin/npx $(STAGING_DIR_HOST)/bin/
+	$(INSTALL_DIR) $(STAGING_DIR_HOST)/lib/node_modules
+	cp -a $(HOST_BUILD_DIR)/lib/node_modules/npm $(STAGING_DIR_HOST)/lib/node_modules/
 endef
 
 define Build/Compile
 	@echo "[node-prebuilt] Skipping source compilation, using prebuilt binary"
 endef
 
+# Install node binary to the target image
 define Package/node/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/bin/node $(1)/usr/bin/node
+	$(LN) node $(1)/usr/bin/nodejs
+endef
+
+# Install npm to the target image
+define Package/node-npm/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_DIR) $(1)/usr/lib
+	# Install npm and npx scripts
+	cp -a $(PKG_BUILD_DIR)/bin/npm $(1)/usr/bin/
+	cp -a $(PKG_BUILD_DIR)/bin/npx $(1)/usr/bin/
+	# Install npm's library files
+	cp -a $(PKG_BUILD_DIR)/lib/node_modules $(1)/usr/lib/
 endef
 
 $(eval $(call HostBuild))
 $(eval $(call BuildPackage,node))
+$(eval $(call BuildPackage,node-npm))
 MAKEFILE_EOF
 
 # 清理该目录下可能干扰新 Makefile 的补丁和其他文件
 rm -rf "${NODE_DIR}/patches"
+
+# 强制重新扫描包索引，否则新定义的 node-npm 和 node/host 不会被识别
+rm -rf tmp/.packageinfo tmp/.targetinfo tmp/info/.packageinfo-feeds_* 2>/dev/null || true
+echo "[node-prebuilt] 重新扫描包索引..."
+./scripts/feeds install node node-npm 2>/dev/null || true
+
+# 显式启用 node-npm，防止 defconfig 将其丢弃
+sed -i '/CONFIG_PACKAGE_node-npm/d' .config
+echo 'CONFIG_PACKAGE_node-npm=y' >> .config
+
+# 显式启用 node/host（供其他包编译时依赖）
+sed -i '/CONFIG_PACKAGE_node\/host/d' .config 2>/dev/null || true
+echo 'CONFIG_PACKAGE_node=y' >> .config
 
 echo "[node-prebuilt] Makefile 替换完成！"
 echo "[node-prebuilt] 运行 make defconfig 同步配置状态..."
