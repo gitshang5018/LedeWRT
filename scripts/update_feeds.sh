@@ -29,9 +29,10 @@ rm -rf feeds/packages/libs/libwebsockets/files/mbedtls 2>/dev/null || true
 # 从 Makefile 中删除 mbedtls 变体的所有定义
 if [ -f feeds/packages/libs/libwebsockets/Makefile ]; then
   # 删除 Package/libwebsockets-mbedtls 相关定义块和 BuildPackage 调用
-  sed -i '/libwebsockets-mbedtls/d' feeds/packages/libs/libwebsockets/Makefile
-  # 删除 BUILD_VARIANT mbedtls 条件块
-  sed -i '/BUILD_VARIANT.*mbedtls/,/^endif/d' feeds/packages/libs/libwebsockets/Makefile
+  sed -i '/define Package\/libwebsockets-mbedtls/,/endef/d' feeds/packages/libs/libwebsockets/Makefile
+  sed -i '/ifeq (\$(BUILD_VARIANT),mbedtls)/,/endif/d' feeds/packages/libs/libwebsockets/Makefile
+  sed -i '/Package\/libwebsockets-mbedtls\/install/d' feeds/packages/libs/libwebsockets/Makefile
+  sed -i '/BuildPackage,libwebsockets-mbedtls/d' feeds/packages/libs/libwebsockets/Makefile
   echo "[feeds] 已从 libwebsockets Makefile 中移除 mbedtls 变体"
 fi
 
