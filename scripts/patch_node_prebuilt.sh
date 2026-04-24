@@ -70,6 +70,7 @@ PKG_LICENSE:=MIT
 PKG_BUILD_DIR:=$(BUILD_DIR)/node-v$(PKG_VERSION)-linux-x64-musl
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/host-build.mk
 
 define Package/node
   SECTION:=lang
@@ -79,9 +80,31 @@ define Package/node
   DEPENDS:=+libc +libstdcpp +libopenssl +zlib +libatomic
 endef
 
+define Package/node/extra_provides
+	libc.musl-x86_64.so.1
+endef
+
 define Package/node/description
   Node.js® is a JavaScript runtime built on Chrome's V8 JavaScript engine.
   (Using prebuilt binary for x86_64 musl to skip ~6h source compilation)
+endef
+
+# Host 预编译逻辑：直接从官方下载 x64 二进制供编译机使用
+define Host/Prepare
+	mkdir -p $(HOST_BUILD_DIR)
+	[ -f $(DL_DIR)/node-v$(PKG_VERSION)-linux-x64.tar.xz ] || \
+	wget -q -O $(DL_DIR)/node-v$(PKG_VERSION)-linux-x64.tar.xz https://nodejs.org/dist/v$(PKG_VERSION)/node-v$(PKG_VERSION)-linux-x64.tar.xz
+	tar -xJ -C $(HOST_BUILD_DIR) --strip-components=1 -f $(DL_DIR)/node-v$(PKG_VERSION)-linux-x64.tar.xz
+endef
+
+define Host/Compile
+	@echo "[node-prebuilt] Skipping host compilation, using official binary"
+endef
+
+define Host/Install
+	$(INSTALL_DIR) $(STAGING_DIR_HOST)/bin
+	$(INSTALL_BIN) $(HOST_BUILD_DIR)/bin/node $(STAGING_DIR_HOST)/bin/node
+	$(LN) node $(STAGING_DIR_HOST)/bin/nodejs
 endef
 
 define Build/Compile
@@ -93,6 +116,7 @@ define Package/node/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/bin/node $(1)/usr/bin/node
 endef
 
+$(eval $(call HostBuild))
 $(eval $(call BuildPackage,node))
 MAKEFILE_EOF
 
@@ -100,5 +124,7 @@ MAKEFILE_EOF
 rm -rf "${NODE_DIR}/patches"
 
 echo "[node-prebuilt] Makefile 替换完成！"
+echo "[node-prebuilt] 运行 make defconfig 同步配置状态..."
+make defconfig
 echo "[node-prebuilt] 预编译 node 将在 'make download' 阶段下载"
 echo "[node-prebuilt] 编译阶段直接安装二进制，节省 ~6 小时"
