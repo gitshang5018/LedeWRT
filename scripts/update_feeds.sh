@@ -27,6 +27,9 @@ rm -rf package/feeds/kenzo/luci-app-dockerman
 rm -rf package/feeds/kenzo/luci-theme-alpha
 rm -rf package/feeds/kenzo/sing-box
 rm -rf package/feeds/small/sing-box
+rm -rf package/feeds/small/tcping
+rm -rf package/feeds/small/luci-app-homeproxy
+rm -rf package/feeds/small/momo
 
 # 7. 自动清理配置缓存，防止旧架构/旧版本的依赖干扰
 rm -rf tmp

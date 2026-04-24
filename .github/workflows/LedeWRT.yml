@@ -170,6 +170,10 @@ jobs:
           # ====== 后置修补与网络配置 ======
           chmod +x local_repo/scripts/post_config.sh
           ./local_repo/scripts/post_config.sh "$DEVICE_MODEL"
+      - name: 注入预编译 Node.js（仅 x86_64）
+        run: |
+          chmod +x local_repo/scripts/patch_node_prebuilt.sh
+          ./local_repo/scripts/patch_node_prebuilt.sh
       - name: 下载依赖包
         run: make download -j16
           
@@ -202,7 +206,7 @@ jobs:
           cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
           cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
           # 收集固件镜像到 firmware 目录（用于 Release 上传）
-          cp -rf $(find ./bin/targets/ -type f -name "*.img.gz" -o -name "*.bin" -o -name "*.img") ./artifact/firmware/ 2>/dev/null || true
+          cp -rf $(find ./bin/targets/ -type f -name "*.img.gz" -o -name "*.bin" -o -name "*.img" -o -name "*.ubi") ./artifact/firmware/ 2>/dev/null || true
 
       - name: 生成 Release 标签
         id: tag
@@ -213,6 +217,19 @@ jobs:
           echo "release_tag=${SAFE_MODEL}_${BUILD_DATE}_${LEDE_HASH}" >> $GITHUB_OUTPUT
           echo "build_date=$(date +"%Y-%m-%d %H:%M")" >> $GITHUB_OUTPUT
           echo "lede_hash=${LEDE_HASH}" >> $GITHUB_OUTPUT
+
+          # 提取已打包的 luci-app 插件列表
+          PLUGIN_LIST=$(grep '^CONFIG_PACKAGE_luci-app-.*=y' .config \
+            | sed 's/CONFIG_PACKAGE_luci-app-//;s/=y//' \
+            | grep -v '_INCLUDE_\|_DEPENDS_' \
+            | sort \
+            | awk '{printf "` %s `  ", $0}')
+          echo "plugin_list=${PLUGIN_LIST}" >> $GITHUB_OUTPUT
+          PLUGIN_COUNT=$(grep '^CONFIG_PACKAGE_luci-app-.*=y' .config \
+            | sed 's/CONFIG_PACKAGE_luci-app-//;s/=y//' \
+            | grep -v '_INCLUDE_\|_DEPENDS_' \
+            | wc -l | tr -d ' ')
+          echo "plugin_count=${PLUGIN_COUNT}" >> $GITHUB_OUTPUT
 
       - name: 上传编译信息
         uses: actions/upload-artifact@v4
@@ -245,6 +262,10 @@ jobs:
             - **源码 Commit**: `coolsnowwolf/lede@${{ steps.tag.outputs.lede_hash }}`
             - **构建时间**: ${{ steps.tag.outputs.build_date }} (Asia/Shanghai)
 
+            ## 🧩 已打包插件 (${{ steps.tag.outputs.plugin_count }} 个)
+            ${{ steps.tag.outputs.plugin_list }}
+
+            ---
             > 默认管理地址: `10.10.10.1`
             > 默认管理密码: `password`
           files: ./artifact/firmware/*
