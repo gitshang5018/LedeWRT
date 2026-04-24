@@ -21,6 +21,20 @@ rm -rf feeds/packages/utils/v2dat
 rm -rf feeds/kenzo/luci-app-dockerman
 rm -rf feeds/kenzo/luci-theme-alpha
 
+# ====== 修复 libwebsockets-mbedtls 编译失败 ======
+# libwebsockets 4.3.2 的 mbedtls 变体调用了已被移除的 mbedtls_version_get_string() API
+# 导致所有设备编译必定失败。在 feeds 层面直接删除 mbedtls 变体，
+# 这样 make defconfig 永远不会自动选中它，只保留 openssl 变体。
+rm -rf feeds/packages/libs/libwebsockets/files/mbedtls 2>/dev/null || true
+# 从 Makefile 中删除 mbedtls 变体的所有定义
+if [ -f feeds/packages/libs/libwebsockets/Makefile ]; then
+  # 删除 Package/libwebsockets-mbedtls 相关定义块和 BuildPackage 调用
+  sed -i '/libwebsockets-mbedtls/d' feeds/packages/libs/libwebsockets/Makefile
+  # 删除 BUILD_VARIANT mbedtls 条件块
+  sed -i '/BUILD_VARIANT.*mbedtls/,/^endif/d' feeds/packages/libs/libwebsockets/Makefile
+  echo "[feeds] 已从 libwebsockets Makefile 中移除 mbedtls 变体"
+fi
+
 # 5. 安装插件
 ./scripts/feeds install -a
 
@@ -28,6 +42,8 @@ rm -rf feeds/kenzo/luci-theme-alpha
 #    （feeds install 通过索引文件创建符号链接，仅删 feeds/ 不够，必须也删 package/feeds/）
 rm -rf package/feeds/kenzo/luci-app-dockerman
 rm -rf package/feeds/kenzo/luci-theme-alpha
+# 确保 libwebsockets-mbedtls 的符号链接也被清除
+rm -rf package/feeds/packages/libwebsockets-mbedtls 2>/dev/null || true
 
 # 7. 自动清理配置缓存，防止旧架构/旧版本的依赖干扰
 rm -rf tmp
