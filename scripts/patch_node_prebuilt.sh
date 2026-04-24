@@ -76,7 +76,7 @@ define Package/node
   CATEGORY:=Languages
   TITLE:=Node.js is a platform built on Chrome's JavaScript runtime
   URL:=https://nodejs.org/
-  DEPENDS:=+libstdcpp +libopenssl +zlib
+  DEPENDS:=+libc +libstdcpp +libopenssl +zlib +libatomic
 endef
 
 define Package/node/description
