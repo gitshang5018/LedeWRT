@@ -53,7 +53,6 @@ echo "[node-prebuilt] 替换 ${NODE_MK} 的编译逻辑为预编译下载..."
 cp "$NODE_MK" "${NODE_MK}.bak"
 
 # 生成新的精简 Makefile
-# PKG_SOURCE_SUBDIR 确保解压后目录名与 PKG_BUILD_DIR 匹配
 cat > "$NODE_MK" << 'MAKEFILE_EOF'
 include $(TOPDIR)/rules.mk
 
@@ -64,10 +63,11 @@ PKG_RELEASE:=1
 PKG_SOURCE:=node-v$(PKG_VERSION)-linux-x64-musl.tar.xz
 PKG_SOURCE_URL:=https://unofficial-builds.nodejs.org/download/release/v$(PKG_VERSION)/
 PKG_HASH:=skip
-PKG_SOURCE_SUBDIR:=node-v$(PKG_VERSION)
 
 PKG_MAINTAINER:=prebuilt
 PKG_LICENSE:=MIT
+
+PKG_BUILD_DIR:=$(BUILD_DIR)/node-v$(PKG_VERSION)-linux-x64-musl
 
 include $(INCLUDE_DIR)/package.mk
 
