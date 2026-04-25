@@ -21,6 +21,7 @@ rm -rf feeds/packages/utils/v2dat
 rm -rf feeds/kenzo/luci-app-dockerman
 rm -rf feeds/kenzo/luci-theme-alpha
 rm -rf feeds/small/tcping
+rm -rf feeds/kenzo/luci-theme-design
 
 # ====== 修复 libwebsockets-mbedtls 编译失败 ======
 # libwebsockets 4.3.2 的 mbedtls 变体调用了已被移除的 mbedtls_version_get_string() API
@@ -37,6 +38,14 @@ if [ -f feeds/packages/libs/libwebsockets/Makefile ]; then
   echo "[feeds] 已从 libwebsockets Makefile 中移除 mbedtls 变体"
 fi
 
+# ====== 修复 shadowsocksr-libev 在 MT7621/MIPS 下的编译崩溃 ======
+# MIPS 架构下开启 -flto 经常会导致 gcc 内存不足或内部错误(ICE)导致编译失败。
+# 这里强制移除 shadowsocksr-libev 的 -flto 编译选项。
+if [ -f feeds/small/shadowsocksr-libev/Makefile ]; then
+  sed -i 's/TARGET_CFLAGS += -flto//g' feeds/small/shadowsocksr-libev/Makefile
+  echo "[feeds] 已移除 shadowsocksr-libev 的 -flto 选项以修复 MT7621 编译问题"
+fi
+
 # 5. 安装插件
 ./scripts/feeds install -a
 
@@ -45,6 +54,7 @@ fi
 rm -rf package/feeds/kenzo/luci-app-dockerman
 rm -rf package/feeds/kenzo/luci-theme-alpha
 rm -rf package/feeds/small/tcping
+rm -rf package/feeds/small/luci-theme-design
 # 确保 libwebsockets-mbedtls 的符号链接也被清除
 rm -rf package/feeds/packages/libwebsockets-mbedtls 2>/dev/null || true
 
