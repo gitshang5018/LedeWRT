@@ -18,7 +18,8 @@ on:
           - Wyse 3040
           - 歌华链 MT7621
           - P&W R619AC
-          - 京东云 IPQ60xx 系列
+          - 京东云 IPQ60xx RE-CS-02
+          - 京东云 IPQ60xx RE-SS-01
         default: '所有设备'
       RELEASE:
         description: '发布 Release'
@@ -52,7 +53,7 @@ jobs:
         run: |
           DEVICE="${{ inputs.DEVICE_MODEL }}"
           if [ -z "$DEVICE" ] || [ "$DEVICE" == "所有设备" ]; then
-            echo 'matrix=["CW-N5105", "Wyse 3040", "歌华链 MT7621", "P&W R619AC", "京东云 IPQ60xx 系列"]' >> $GITHUB_OUTPUT
+            echo 'matrix=["CW-N5105", "Wyse 3040", "歌华链 MT7621", "P&W R619AC", "京东云 IPQ60xx RE-CS-02", "京东云 IPQ60xx RE-SS-01"]' >> $GITHUB_OUTPUT
           else
             echo "matrix=[\"$DEVICE\"]" >> $GITHUB_OUTPUT
           fi
