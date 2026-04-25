@@ -22,6 +22,10 @@ rm -rf feeds/kenzo/luci-app-dockerman
 rm -rf feeds/kenzo/luci-theme-alpha
 rm -rf feeds/small/tcping
 rm -rf feeds/kenzo/luci-theme-design
+rm -rf feeds/kenzo/luci-app-vlmcsd
+rm -rf feeds/kenzo/vlmcsd
+rm -rf feeds/small/luci-app-vlmcsd
+rm -rf feeds/small/vlmcsd
 
 # ====== 修复 libwebsockets-mbedtls 编译失败 ======
 # libwebsockets 4.3.2 的 mbedtls 变体调用了已被移除的 mbedtls_version_get_string() API
@@ -54,7 +58,11 @@ fi
 rm -rf package/feeds/kenzo/luci-app-dockerman
 rm -rf package/feeds/kenzo/luci-theme-alpha
 rm -rf package/feeds/small/tcping
-rm -rf package/feeds/small/luci-theme-design
+rm -rf package/feeds/kenzo/luci-theme-design
+rm -rf package/feeds/kenzo/luci-app-vlmcsd
+rm -rf package/feeds/kenzo/vlmcsd
+rm -rf package/feeds/small/luci-app-vlmcsd
+rm -rf package/feeds/small/vlmcsd
 # 确保 libwebsockets-mbedtls 的符号链接也被清除
 rm -rf package/feeds/packages/libwebsockets-mbedtls 2>/dev/null || true
 
