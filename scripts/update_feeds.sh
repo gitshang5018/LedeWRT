@@ -20,6 +20,7 @@ rm -rf feeds/packages/utils/v2dat
 # 注意：不再替换 golang，LEDE 自带 Go 1.26.2 已满足所有包的编译需求
 rm -rf feeds/kenzo/luci-app-dockerman
 rm -rf feeds/kenzo/luci-theme-alpha
+rm -rf feeds/small/tcping
 
 # ====== 修复 libwebsockets-mbedtls 编译失败 ======
 # libwebsockets 4.3.2 的 mbedtls 变体调用了已被移除的 mbedtls_version_get_string() API
@@ -43,6 +44,7 @@ fi
 #    （feeds install 通过索引文件创建符号链接，仅删 feeds/ 不够，必须也删 package/feeds/）
 rm -rf package/feeds/kenzo/luci-app-dockerman
 rm -rf package/feeds/kenzo/luci-theme-alpha
+rm -rf package/feeds/small/tcping
 # 确保 libwebsockets-mbedtls 的符号链接也被清除
 rm -rf package/feeds/packages/libwebsockets-mbedtls 2>/dev/null || true
 
