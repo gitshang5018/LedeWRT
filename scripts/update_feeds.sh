@@ -15,7 +15,7 @@ sed -i '2i src-git small https://github.com/kenzok8/small' feeds.conf.default
 
 # 4. 清理 feeds 中已知的冲突项
 rm -rf feeds/luci/applications/luci-app-mosdns
-rm -rf feeds/packages/net/{alist,adguardhome,mosdns,xray*,v2ray*,sing*,smartdns}
+rm -rf feeds/packages/net/{alist,adguardhome,mosdns,v2ray*,sing*,smartdns}
 rm -rf feeds/packages/utils/v2dat
 # 注意：不再替换 golang，LEDE 自带 Go 1.26.2 已满足所有包的编译需求
 rm -rf feeds/kenzo/luci-app-dockerman
@@ -26,6 +26,12 @@ rm -rf feeds/kenzo/luci-app-vlmcsd
 rm -rf feeds/kenzo/vlmcsd
 rm -rf feeds/small/luci-app-vlmcsd
 rm -rf feeds/small/vlmcsd
+
+# ====== 修复 xray-core 编译失败 ======
+# kenzok8/small 源的 xray-core 与 LEDE 构建系统存在兼容性问题（Go 模块/Makefile 版本不匹配），
+# 导致 "Configuring xray-core" 阶段失败。删除 small 源的版本，保留官方 feeds/packages 中的版本。
+rm -rf feeds/small/xray*
+rm -rf feeds/small/v2ray*
 
 # ====== 修复 libwebsockets-mbedtls 编译失败 ======
 # libwebsockets 4.3.2 的 mbedtls 变体调用了已被移除的 mbedtls_version_get_string() API
@@ -63,6 +69,8 @@ rm -rf package/feeds/kenzo/luci-app-vlmcsd
 rm -rf package/feeds/kenzo/vlmcsd
 rm -rf package/feeds/small/luci-app-vlmcsd
 rm -rf package/feeds/small/vlmcsd
+rm -rf package/feeds/small/xray*
+rm -rf package/feeds/small/v2ray*
 # 确保 libwebsockets-mbedtls 的符号链接也被清除
 rm -rf package/feeds/packages/libwebsockets-mbedtls 2>/dev/null || true
 
