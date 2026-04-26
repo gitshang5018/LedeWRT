@@ -17,13 +17,11 @@ sed -i '3i src-git helloworld https://github.com/fw876/helloworld' feeds.conf.de
 
 # 4. 清理 feeds 中已知的冲突项
 rm -rf feeds/luci/applications/luci-app-mosdns
-rm -rf feeds/packages/net/{alist,adguardhome,mosdns,v2ray*,sing*,smartdns}
+rm -rf feeds/packages/net/{alist,adguardhome,mosdns,sing*,smartdns,v2ray-core,v2ray-plugin}
 rm -rf feeds/packages/utils/v2dat
 # 注意：不再替换 golang，LEDE 自带 Go 1.26.2 已满足所有包的编译需求
 rm -rf feeds/kenzo/luci-app-dockerman
 rm -rf feeds/kenzo/luci-theme-alpha
-rm -rf feeds/small/tcping
-rm -rf feeds/kenzo/luci-theme-design
 rm -rf feeds/kenzo/luci-app-nlbwmon
 rm -rf feeds/kenzo/luci-app-vlmcsd
 rm -rf feeds/kenzo/vlmcsd
@@ -31,11 +29,12 @@ rm -rf feeds/small/luci-app-vlmcsd
 rm -rf feeds/small/vlmcsd
 
 # ====== 使用 fw876/helloworld 原版 ssr-plus，清理 small 源中的冲突副本 ======
-# kenzok8/small 是 helloworld 的二次打包，其 xray-core 等组件与 LEDE 存在兼容性问题。
-# 删除 small 源中的 ssr-plus 及其依赖组件，统一使用 helloworld 原仓库的版本。
+# kenzok8/small 是 helloworld 的二次打包，删除 small 源中的 ssr-plus，统一使用 helloworld 原仓库的版本。
+# 注意：helloworld 现已不提供 xray-core 和 v2ray-geodata，如果把它们删了会导致严重依赖报错。
+# 因此我们必须保留 small 里的 xray-core，仅删除 v2ray-core 和 v2ray-plugin 以防止同名冲突。
 rm -rf feeds/small/luci-app-ssr-plus
-rm -rf feeds/small/xray*
-rm -rf feeds/small/v2ray*
+rm -rf feeds/small/v2ray-core
+rm -rf feeds/small/v2ray-plugin
 
 # ====== 修复 libwebsockets-mbedtls 编译失败 ======
 # libwebsockets 4.3.2 的 mbedtls 变体调用了已被移除的 mbedtls_version_get_string() API
@@ -67,16 +66,14 @@ fi
 #    （feeds install 通过索引文件创建符号链接，仅删 feeds/ 不够，必须也删 package/feeds/）
 rm -rf package/feeds/kenzo/luci-app-dockerman
 rm -rf package/feeds/kenzo/luci-theme-alpha
-rm -rf package/feeds/small/tcping
-rm -rf package/feeds/kenzo/luci-theme-design
 rm -rf package/feeds/kenzo/luci-app-nlbwmon
 rm -rf package/feeds/kenzo/luci-app-vlmcsd
 rm -rf package/feeds/kenzo/vlmcsd
 rm -rf package/feeds/small/luci-app-vlmcsd
 rm -rf package/feeds/small/vlmcsd
 rm -rf package/feeds/small/luci-app-ssr-plus
-rm -rf package/feeds/small/xray*
-rm -rf package/feeds/small/v2ray*
+rm -rf package/feeds/small/v2ray-core
+rm -rf package/feeds/small/v2ray-plugin
 # 确保 libwebsockets-mbedtls 的符号链接也被清除
 rm -rf package/feeds/packages/libwebsockets-mbedtls 2>/dev/null || true
 
