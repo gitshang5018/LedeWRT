@@ -24,6 +24,7 @@ rm -rf feeds/kenzo/luci-app-dockerman
 rm -rf feeds/kenzo/luci-theme-alpha
 rm -rf feeds/small/tcping
 rm -rf feeds/kenzo/luci-theme-design
+rm -rf feeds/kenzo/luci-app-nlbwmon
 rm -rf feeds/kenzo/luci-app-vlmcsd
 rm -rf feeds/kenzo/vlmcsd
 rm -rf feeds/small/luci-app-vlmcsd
@@ -68,6 +69,7 @@ rm -rf package/feeds/kenzo/luci-app-dockerman
 rm -rf package/feeds/kenzo/luci-theme-alpha
 rm -rf package/feeds/small/tcping
 rm -rf package/feeds/kenzo/luci-theme-design
+rm -rf package/feeds/kenzo/luci-app-nlbwmon
 rm -rf package/feeds/kenzo/luci-app-vlmcsd
 rm -rf package/feeds/kenzo/vlmcsd
 rm -rf package/feeds/small/luci-app-vlmcsd
