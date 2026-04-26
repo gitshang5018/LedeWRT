@@ -7,8 +7,10 @@ rm -rf package/{mosdns,v2ray-geodata,v2dat,luci-app-unblockneteasemusic,lucky}
 # 2. 注入新源并防止重复
 sed -i '/kenzok8\/openwrt-packages/d' feeds.conf.default
 sed -i '/kenzok8\/small/d' feeds.conf.default
+sed -i '/fw876\/helloworld/d' feeds.conf.default
 sed -i '1i src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
 sed -i '2i src-git small https://github.com/kenzok8/small' feeds.conf.default
+sed -i '3i src-git helloworld https://github.com/fw876/helloworld' feeds.conf.default
 
 # 3. 更新 feeds 索引
 ./scripts/feeds update -a
@@ -27,9 +29,10 @@ rm -rf feeds/kenzo/vlmcsd
 rm -rf feeds/small/luci-app-vlmcsd
 rm -rf feeds/small/vlmcsd
 
-# ====== 修复 xray-core 编译失败 ======
-# kenzok8/small 源的 xray-core 与 LEDE 构建系统存在兼容性问题（Go 模块/Makefile 版本不匹配），
-# 导致 "Configuring xray-core" 阶段失败。删除 small 源的版本，保留官方 feeds/packages 中的版本。
+# ====== 使用 fw876/helloworld 原版 ssr-plus，清理 small 源中的冲突副本 ======
+# kenzok8/small 是 helloworld 的二次打包，其 xray-core 等组件与 LEDE 存在兼容性问题。
+# 删除 small 源中的 ssr-plus 及其依赖组件，统一使用 helloworld 原仓库的版本。
+rm -rf feeds/small/luci-app-ssr-plus
 rm -rf feeds/small/xray*
 rm -rf feeds/small/v2ray*
 
@@ -69,6 +72,7 @@ rm -rf package/feeds/kenzo/luci-app-vlmcsd
 rm -rf package/feeds/kenzo/vlmcsd
 rm -rf package/feeds/small/luci-app-vlmcsd
 rm -rf package/feeds/small/vlmcsd
+rm -rf package/feeds/small/luci-app-ssr-plus
 rm -rf package/feeds/small/xray*
 rm -rf package/feeds/small/v2ray*
 # 确保 libwebsockets-mbedtls 的符号链接也被清除
