@@ -2,7 +2,12 @@
 set -e
 
 # 1. 清理环境：删除旧的手动克隆包，防止与新源冲突
-rm -rf package/{mosdns,v2ray-geodata,v2dat,luci-app-unblockneteasemusic,lucky}
+rm -rf package/{mosdns,v2ray-geodata,v2dat,luci-app-unblockneteasemusic,lucky,tcping}
+
+# 1.1 手动拉取已知编译通过的包（例如 C 版本的 tcping，替代 small 源中编译失败的版本）
+git clone --depth 1 https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git tmp_passwall_pkgs
+mv tmp_passwall_pkgs/tcping package/tcping
+rm -rf tmp_passwall_pkgs
 
 # 2. 注入新源并防止重复
 sed -i '/kenzok8\/openwrt-packages/d' feeds.conf.default
@@ -22,6 +27,7 @@ rm -rf feeds/packages/utils/v2dat
 # 注意：不再替换 golang，LEDE 自带 Go 1.26.2 已满足所有包的编译需求
 rm -rf feeds/kenzo/luci-app-dockerman
 rm -rf feeds/kenzo/luci-theme-alpha
+rm -rf feeds/small/tcping
 rm -rf feeds/kenzo/luci-app-nlbwmon
 rm -rf feeds/kenzo/luci-app-vlmcsd
 rm -rf feeds/kenzo/vlmcsd
@@ -66,6 +72,7 @@ fi
 #    （feeds install 通过索引文件创建符号链接，仅删 feeds/ 不够，必须也删 package/feeds/）
 rm -rf package/feeds/kenzo/luci-app-dockerman
 rm -rf package/feeds/kenzo/luci-theme-alpha
+rm -rf package/feeds/small/tcping
 rm -rf package/feeds/kenzo/luci-app-nlbwmon
 rm -rf package/feeds/kenzo/luci-app-vlmcsd
 rm -rf package/feeds/kenzo/vlmcsd
