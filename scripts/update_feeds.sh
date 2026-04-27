@@ -27,6 +27,7 @@ rm -rf feeds/packages/utils/v2dat
 # 注意：不再替换 golang，LEDE 自带 Go 1.26.2 已满足所有包的编译需求
 rm -rf feeds/kenzo/luci-app-dockerman
 rm -rf feeds/kenzo/luci-theme-alpha
+rm -rf feeds/kenzo/luci-theme-design
 rm -rf feeds/small/tcping
 rm -rf feeds/kenzo/luci-app-nlbwmon
 rm -rf feeds/kenzo/luci-app-vlmcsd
@@ -66,12 +67,14 @@ if [ -f feeds/small/shadowsocksr-libev/Makefile ]; then
 fi
 
 # 5. 安装插件
+./scripts/feeds install -p helloworld luci-app-ssr-plus
 ./scripts/feeds install -a
 
 # 6. 安装后清理：从 package/feeds 中移除有缺陷依赖或语法错误的包
 #    （feeds install 通过索引文件创建符号链接，仅删 feeds/ 不够，必须也删 package/feeds/）
 rm -rf package/feeds/kenzo/luci-app-dockerman
 rm -rf package/feeds/kenzo/luci-theme-alpha
+rm -rf package/feeds/kenzo/luci-theme-design
 rm -rf package/feeds/small/tcping
 rm -rf package/feeds/kenzo/luci-app-nlbwmon
 rm -rf package/feeds/kenzo/luci-app-vlmcsd
