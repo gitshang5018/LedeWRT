@@ -30,8 +30,8 @@ rm -rf feeds/kenzo/luci-theme-alpha
 rm -rf feeds/kenzo/luci-theme-design
 rm -rf feeds/small/tcping
 rm -rf feeds/kenzo/luci-app-nlbwmon
-rm -rf feeds/luci/applications/luci-app-vlmcsd
-rm -rf feeds/packages/net/vlmcsd
+# rm -rf feeds/luci/applications/luci-app-vlmcsd
+# rm -rf feeds/packages/net/vlmcsd
 
 # ====== 使用 fw876/helloworld 原版 ssr-plus，清理 small 源中的冲突副本 ======
 # kenzok8/small 是 helloworld 的二次打包，删除 small 源中的 ssr-plus，统一使用 helloworld 原仓库的版本。
@@ -75,8 +75,8 @@ rm -rf package/feeds/kenzo/luci-theme-alpha
 rm -rf package/feeds/kenzo/luci-theme-design
 rm -rf package/feeds/small/tcping
 rm -rf package/feeds/kenzo/luci-app-nlbwmon
-rm -rf package/feeds/luci/luci-app-vlmcsd
-rm -rf package/feeds/packages/vlmcsd
+# rm -rf package/feeds/luci/luci-app-vlmcsd
+# rm -rf package/feeds/packages/vlmcsd
 rm -rf package/feeds/small/luci-app-ssr-plus
 rm -rf package/feeds/small/v2ray-core
 rm -rf package/feeds/small/v2ray-plugin
