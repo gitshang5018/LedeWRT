@@ -31,6 +31,10 @@ rm -rf feeds/kenzo/luci-theme-design
 rm -rf feeds/kenzo/luci-app-design-config
 rm -rf feeds/small/tcping
 rm -rf feeds/kenzo/luci-app-nlbwmon
+rm -rf feeds/kenzo/luci-app-vlmcsd
+rm -rf feeds/kenzo/vlmcsd
+rm -rf feeds/small/luci-app-vlmcsd
+rm -rf feeds/small/vlmcsd
 
 # ====== 修复 vlmcsd 编译失败 ======
 # vlmcsd svn1113 的 src/GNUmakefile 中 -DVLMCSD_COMPILER=\"$(notdir $(CC))\" 无法正确处理
@@ -53,10 +57,6 @@ if [ -d feeds/packages/net/vlmcsd ]; then
  CLIENTLDFLAGS =
 VLMPATCH
   echo "[feeds] 已添加 vlmcsd 补丁：修复 ccache 多词 CC 变量导致的编译失败"
-
-  # 删除 vlmcsd 自带的 init.d 和 config，防止与 luci-app-vlmcsd 发生冲突，解决在 LuCI 界面开启后保存不生效（始终未运行）的问题
-  sed -i '/vlmcsd.init/d' feeds/packages/net/vlmcsd/Makefile
-  sed -i '/vlmcsd.config/d' feeds/packages/net/vlmcsd/Makefile
 fi
 
 # ====== 使用 fw876/helloworld 原版 ssr-plus，清理 small 源中的冲突副本 ======
@@ -102,6 +102,10 @@ rm -rf package/feeds/kenzo/luci-theme-design
 rm -rf package/feeds/kenzo/luci-app-design-config
 rm -rf package/feeds/small/tcping
 rm -rf package/feeds/kenzo/luci-app-nlbwmon
+rm -rf package/feeds/kenzo/luci-app-vlmcsd
+rm -rf package/feeds/kenzo/vlmcsd
+rm -rf package/feeds/small/luci-app-vlmcsd
+rm -rf package/feeds/small/vlmcsd
 rm -rf package/feeds/small/luci-app-ssr-plus
 rm -rf package/feeds/small/v2ray-core
 rm -rf package/feeds/small/v2ray-plugin
