@@ -53,6 +53,10 @@ if [ -d feeds/packages/net/vlmcsd ]; then
  CLIENTLDFLAGS =
 VLMPATCH
   echo "[feeds] 已添加 vlmcsd 补丁：修复 ccache 多词 CC 变量导致的编译失败"
+
+  # 删除 vlmcsd 自带的 init.d 和 config，防止与 luci-app-vlmcsd 发生冲突，解决在 LuCI 界面开启后保存不生效（始终未运行）的问题
+  sed -i '/vlmcsd.init/d' feeds/packages/net/vlmcsd/Makefile
+  sed -i '/vlmcsd.config/d' feeds/packages/net/vlmcsd/Makefile
 fi
 
 # ====== 使用 fw876/helloworld 原版 ssr-plus，清理 small 源中的冲突副本 ======
