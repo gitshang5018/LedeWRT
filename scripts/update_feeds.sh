@@ -28,10 +28,32 @@ rm -rf feeds/packages/utils/v2dat
 rm -rf feeds/kenzo/luci-app-dockerman
 rm -rf feeds/kenzo/luci-theme-alpha
 rm -rf feeds/kenzo/luci-theme-design
+rm -rf feeds/kenzo/luci-app-design-config
 rm -rf feeds/small/tcping
 rm -rf feeds/kenzo/luci-app-nlbwmon
-# rm -rf feeds/luci/applications/luci-app-vlmcsd
-# rm -rf feeds/packages/net/vlmcsd
+
+# ====== 修复 vlmcsd 编译失败 ======
+# vlmcsd svn1113 的 src/GNUmakefile 中 -DVLMCSD_COMPILER=\"$(notdir $(CC))\" 无法正确处理
+# OpenWrt 的多词 CC（如 "ccache aarch64-...-gcc"），导致 gcc 报错：
+#   fatal error: cannot specify '-o' with '-c', '-S' or '-E' with multiple files
+# 修复方式：通过 OpenWrt patches 机制，将 $(notdir $(CC)) 改为 $(lastword $(notdir $(CC)))
+if [ -d feeds/packages/net/vlmcsd ]; then
+  mkdir -p feeds/packages/net/vlmcsd/patches
+  cat > feeds/packages/net/vlmcsd/patches/010-fix-multiword-cc.patch << 'VLMPATCH'
+--- a/src/GNUmakefile
++++ b/src/GNUmakefile
+@@ -159,7 +159,7 @@
+   DLL_NAME ?= ../lib/libkms.so
+ endif
+ 
+-BASECFLAGS = -DVLMCSD_COMPILER=\"$(notdir $(CC))\" -DVLMCSD_PLATFORM=\"$(TARGETPLATFORM)\" -DCONFIG=\"$(CONFIG)\" -DBUILD_TIME=$(shell date '+%s') -g -Os -fno-strict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections
++BASECFLAGS = -DVLMCSD_COMPILER=\"$(lastword $(notdir $(CC)))\" -DVLMCSD_PLATFORM=\"$(TARGETPLATFORM)\" -DCONFIG=\"$(CONFIG)\" -DBUILD_TIME=$(shell date '+%s') -g -Os -fno-strict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections
+ BASELDFLAGS = 
+ STRIPFLAGS =
+ CLIENTLDFLAGS =
+VLMPATCH
+  echo "[feeds] 已添加 vlmcsd 补丁：修复 ccache 多词 CC 变量导致的编译失败"
+fi
 
 # ====== 使用 fw876/helloworld 原版 ssr-plus，清理 small 源中的冲突副本 ======
 # kenzok8/small 是 helloworld 的二次打包，删除 small 源中的 ssr-plus，统一使用 helloworld 原仓库的版本。
@@ -73,10 +95,9 @@ fi
 rm -rf package/feeds/kenzo/luci-app-dockerman
 rm -rf package/feeds/kenzo/luci-theme-alpha
 rm -rf package/feeds/kenzo/luci-theme-design
+rm -rf package/feeds/kenzo/luci-app-design-config
 rm -rf package/feeds/small/tcping
 rm -rf package/feeds/kenzo/luci-app-nlbwmon
-# rm -rf package/feeds/luci/luci-app-vlmcsd
-# rm -rf package/feeds/packages/vlmcsd
 rm -rf package/feeds/small/luci-app-ssr-plus
 rm -rf package/feeds/small/v2ray-core
 rm -rf package/feeds/small/v2ray-plugin
